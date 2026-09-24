@@ -1,19 +1,13 @@
-#let icon(path) = box(
+// Contact labels carry the meaning; their icons are decorative PDF artifacts.
+#let icon(source) = pdf.artifact(box(
   baseline: 0.125em,
-  height: 1.0em,
-  width: 1.25em,
-  image(
-    path, 
-    width: 1em,
-  )
-)
+  image(source, height: 0.9em),
+))
 
-// Set fontawesome icons
-#let fa_path = "/img/fa/fa-";
-
-#let fa_home = icon(fa_path + "home.svg");
-#let fa_email = icon(fa_path + "envelope.svg");
-#let fa_github = icon(fa_path + "github.svg");
-#let fa_linkedin = icon(fa_path + "linkedin.svg");
-#let fa_phone = icon(fa_path + "phone-alt.svg");
-#let fa_weixin = icon(fa_path + "weixin.svg");
+// `path` retains this file's directory when passed to the image helper.
+#let fa-home = icon(path("../img/fa/fa-home.svg"))
+#let fa-email = icon(path("../img/fa/fa-envelope.svg"))
+#let fa-github = icon(path("../img/fa/fa-github.svg"))
+#let fa-linkedin = icon(path("../img/fa/fa-linkedin.svg"))
+#let fa-phone = icon(path("../img/fa/fa-phone-alt.svg"))
+#let fa-weixin = icon(path("../img/fa/fa-weixin.svg"))

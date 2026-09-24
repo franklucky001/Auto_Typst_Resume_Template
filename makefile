@@ -1,19 +1,22 @@
-# Created by: yangyf83 at 2023/10/09
+.DEFAULT_GOAL := all
 
-mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-cur_makefile_path := $(dir $(mkfile_path))
+TYPST ?= typst
+TYPST_FLAGS ?=
 
-all: clean zh en
-
-clean:
-	find . -name "*.pdf"  | xargs rm -f
+all: zh en
 
 zh:
-	typst compile --font-path ./fonts --root $(cur_makefile_path) src/chinese.typ 个人简历.pdf
+	$(TYPST) compile --root . --font-path fonts $(TYPST_FLAGS) src/chinese.typ 个人简历.pdf
 
 en:
-	typst compile --font-path ./fonts --root $(cur_makefile_path) src/english.typ Resume.pdf
+	$(TYPST) compile --root . --font-path fonts $(TYPST_FLAGS) src/english.typ Resume.pdf
 
 build: all
 
-.PHONY: all
+check:
+	TYPST="$(TYPST)" sh tests/check.sh
+
+clean:
+	rm -f -- 个人简历.pdf Resume.pdf
+
+.PHONY: all zh en build check clean

@@ -1,111 +1,77 @@
-#import "icons.typ": *;
-
-#let template(doc) = {
-    set page(
-        margin: (x: 0.9cm, y: 1.3cm),
-        paper: "a4",
-    )
-    set text(
-        size: 11pt,
-        font:("Noto Serif CJK SC"),
-    )
-    show link: text
-    set par(
-        justify: true,
-    )
-    doc
-}
-
-#let init(
-    name: lorem(3),
-    pic_path: "",
+// Typst 0.15.1+. Apply with `#show: resume.with("Your Name", ...)`.
+#let resume(
+  name,
+  lang: "en",
+  font: "Libertinus Serif",
+  photo: none,
+  contacts: (),
+  body,
 ) = {
-    set document(
-        title: name + "'s Resume",
-        author: name,
-    )
-    set align(
-        center,
-    )
-    text(
-        style: "normal",
-        weight: "extrabold",
-        size: 20pt,
-    )[#name]
-    if pic_path != "" {
-        // insert picture
-        place(
-            top + right,
-            dy: -2em,
-            image(
-                pic_path,
-                height: 33mm,
-            )
-        )
+  set document(
+    title: if lang == "zh" { name + "的简历" } else { name + "'s Resume" },
+    author: name,
+  )
+  set page(paper: "a4", margin: (x: 0.9cm, y: 1.3cm))
+  set text(font: font, size: 11pt, lang: lang)
+  set par(justify: true, leading: 0.65em)
+  set list(indent: 0pt, body-indent: 0.8em)
+  set heading(numbering: none)
+  show title: set text(size: 20pt, weight: "bold")
+  show title: set block(above: 0pt, below: 0.5em)
+  show heading.where(level: 1): set text(size: 12pt)
+  show heading.where(level: 1): set block(
+    width: 100%,
+    above: 1em,
+    below: 0.6em,
+    inset: (bottom: 0.25em),
+    stroke: (bottom: 0.5pt),
+  )
+
+  let header = align(center, {
+    set par(justify: false)
+    title(name)
+    contacts.join(h(0.5em) + pdf.artifact[·] + h(0.5em))
+  })
+  block(width: 100%, breakable: false, below: 0.5em, {
+    if photo == none {
+      header
+    } else {
+      grid(
+        columns: (1fr, auto),
+        column-gutter: 1em,
+        align: (center + horizon, right + horizon),
+        header,
+        image(photo, width: 25mm, height: 33mm, fit: "cover", alt: name),
+      )
     }
-    // v(1em)
-    set align(left)
+  })
+  body
 }
 
-#let info(
-    color: rgb(0, 0, 0),
-    ..infos
-) = {
-    set text(
-        fill: color,
-        // size: 10pt,
+// Pass rendered icon content; link destinations and display text stay separate.
+#let contact(body, icon: none, dest: none) = {
+  if icon != none {
+    icon
+    h(0.2em)
+  }
+  if dest == none { body } else { link(dest, body) }
+}
+
+// Two rows, in reading order: title / role, then details / date.
+#let entry(title, role: none, details: none, date: none) = block(
+  width: 100%,
+  breakable: false,
+  above: 0.65em,
+  below: 0.5em,
+  {
+    set par(justify: false)
+    grid(
+      columns: (3fr, 2fr),
+      column-gutter: 1em,
+      row-gutter: 0.35em,
+      align: (left, right),
+      strong(title), role,
+      ..if details != none or date != none { (details, date) } else { () },
     )
-    set align(
-        center,
-    )
-    infos.pos().map(dir => {
-        box(
-            height: 1em,
-            {
-            if "icon" in dir {
-                if (type(dir.icon) == str) {
-                    icon(dir.icon)
-                } else {
-                    dir.icon
-                }
-            }
-            h(0.15em)
-            if "link" in dir {
-                link(dir.link, dir.content)
-            } else {
-                dir.content
-            }
-        })
-    }).join(h(0.5em) + "·" + h(0.5em))
-    v(0.5em)
-}
-
-#let chiline() = {v(-3pt); line(length: 100%); v(-5pt)}
-
-#let resume_section(title) = {
-    [== #title]
-    chiline()
-}
-
-#let resume_item(proj_title, proj_time, proj_postion, proj_rule) = {
-    [*#proj_title*]
-    h(1fr)
-    if proj_time != none {
-        [#proj_time]
-    }
-    if proj_postion != none or proj_rule != none {
-        linebreak()
-    }   
-    if proj_postion != none {
-        [#proj_postion]
-    }
-    h(1fr)
-    if(proj_rule != none) {
-        [#proj_rule]
-    }
-    linebreak()
-}
-
-#let resume_desc(l, r) = {
-    [- *#l*: #r]
-}
+  },
+)
