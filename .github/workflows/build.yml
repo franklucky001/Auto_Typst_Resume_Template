@@ -1,33 +1,50 @@
-name: Build and Commit PDF
-on: [push]
+name: Build resumes
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-    build:
-        name: Build PDF
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        steps:
-        - name: Checkout master
-          uses: actions/checkout@v4
-          with:  
-            fetch-depth: 0
-        - name: install fonts
-          run: sudo apt-get install -y fonts-noto-cjk fonts-noto-cjk-extra
-        - uses: typst-community/setup-typst@v3
-          id: setup-typst
-        - name: Build PDF
-          run: make all
-        - uses: actions/upload-artifact@v4
-          with:
-            name: resume-pdf
-            path: |
-              个人简历.pdf
-              Resume.pdf
-        - name: Release
-          uses: softprops/action-gh-release@v1
-          if: startsWith(github.ref, 'refs/tags/')
-          with:
-            files: |
-              *.pdf
-            
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chinese fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+      - uses: typst-community/setup-typst@v4
+        with:
+          typst-version: '0.15.1'
+      - name: Validate templates
+        run: make check
+      - name: Build PDFs
+        run: make -j2 all
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resume-pdf
+          if-no-files-found: error
+          path: |
+            个人简历.pdf
+            Resume.pdf
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: resume-pdf
+      - uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          files: |
+            个人简历.pdf
+            Resume.pdf
