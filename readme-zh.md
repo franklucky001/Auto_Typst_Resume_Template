@@ -1,73 +1,127 @@
 # Typst 中英双语简历模板
 
-## 介绍
+**[English](./README.md)**
 
-一个可借助 Github Actions 或 Typst 官网实现自动编译的 Typst 中文/英文双语简历模板（**无需本地环境**）。效果如下（也可参考 Release 页面中的 PDF 文件）:
+可编辑的中英文 A4 简历模板，支持本地、Typst Web 和 GitHub Actions 编译。
+要求 **Typst 0.15.1 或更新版本**；CI 固定使用 **0.15.1**。无需第三方 Typst 包。
 
-|  [中文示例](https://github.com/NorthSecond/Auto_Typst_Resume_Template/releases/download/v2.1.0/default.pdf) |  [英文示例](https://github.com/NorthSecond/Auto_Typst_Resume_Template/releases/download/v2.1.0/Resume.pdf)| 
+| 中文示例 | 英文示例 |
 |:---:|:---:|
-| ![](/docs/Chinese.png?raw=true) | ![](/docs/English.png?raw=true)| 
+| ![中文简历](docs/Chinese.png) | ![英文简历](docs/English.png) |
+
+模板版本：**3.0.0**。升级说明见[版本日志与迁移指南](CHANGELOG.md)。
+
+## 快速开始
+
+1. 使用此 GitHub 仓库创建自己的模板仓库。
+2. 编辑 `src/chinese.typ` 或 `src/english.typ`。
+3. 本地编译，或启用 GitHub Actions 后下载 `resume-pdf` 构建产物。
+
+在 Typst Web 中，上传仓库文件并保留目录结构，选择 `src/` 下的文件作为主文件，
+将编译器设为 0.15.1 或更新版本。
+[原在线共享项目](https://typst.app/project/r4XMUB3ENQUH7zWiuK7_tO)是历史副本，
+不保证包含当前接口，建议以仓库文件为准。
+
+## 本地编译
+
+安装 Typst 和 GNU Make，在**仓库根目录**运行：
+
+```sh
+make             # 生成 个人简历.pdf 和 Resume.pdf
+make zh          # 仅编译中文
+make en          # 仅编译英文
+make -j2 all     # 并行编译两份简历
+make check       # 编译并运行回归检查，需要 POSIX shell
+make clean       # 仅删除上述两份生成文件
+```
+
+`make build` 等同于 `make all`。编译前不会自动清理文件。
+可用 `TYPST=/path/to/typst` 指定编译器。
+需要启用 Typst 的 PDF/UA-1 导出检查时，执行：
+
+```sh
+make TYPST_FLAGS='--pdf-standard ua-1'
+```
+
+也可以不使用 Make，直接编译：
+
+```sh
+typst compile --root . --font-path fonts src/chinese.typ 个人简历.pdf
+typst compile --root . --font-path fonts src/english.typ Resume.pdf
+```
 
 ### 字体
 
-中文简历使用的是 **思源宋体** 的谷歌版本，对于在线使用的用户来说，并不需要进行安装操作，对于本地使用的用户，可以参照下一节中的内容进行字体的安装；英文部分使用 Centaur 字体。
+- 中文使用 **Noto Serif CJK SC**。Debian/Ubuntu 可安装 `fonts-noto-cjk`；
+  也可从 [Noto CJK](https://github.com/notofonts/noto-cjk) 下载字体，放入 `fonts/`，
+  而不是仓库根目录。
+- 英文使用 **Libertinus Serif**，官方 Typst CLI 已内置该字体。
+- 用 `typst fonts --font-path fonts` 查看实际可用的字体族名称。Typst Web 中可选择
+  平台已有字体或上传所需字体。“Noto Serif SC”和“Noto Serif CJK SC”可能是不同的
+  字体族名称，`font` 必须与实际安装的名称一致。
 
-### 证件照支持
+## 编写简历
 
-在编写建立时可选择是否插入证件照。在编写简历的过程中，如果不需要插入证件照，将 `pic_path` 参数设置为空即可。如果需要插入证件照，将 `pic_path` 参数设置为证件照的路径即可。
+通过一个文档级 show rule 配置姓名、语言、字体、头像和联系方式。
+在源文件中用 `path(...)` 创建图片路径，传入模板后仍相对于该源文件解析：
 
+```typ
+#import "../template/template.typ": resume, contact, entry
+#import "../template/icons.typ": fa-email
 
-## 使用方式
+#show: resume.with(
+  "张三",
+  lang: "zh",
+  font: "Noto Serif CJK SC",
+  // 不需要头像时省略此参数，或设为 none。
+  photo: path("../img/avatar.jpg"),
+  contacts: (
+    contact("me@example.org", icon: fa-email, dest: "mailto:me@example.org"),
+  ),
+)
 
-### Typst Web（推荐）
+= 教育经历
 
-我制作了一个 [typst.app](https://typst.app) 上的在线项目，[链接在此](https://typst.app/project/r4XMUB3ENQUH7zWiuK7_tO)。可以复制该项目到自己的账号中进行使用，即可完成在线编辑和即时预览。
+#entry(
+  "示例大学",
+  role: "工学硕士",
+  details: "计算机科学与技术",
+  date: "2024–2027",
+)
+- *成果:* 描述具体的工作和结果。
+```
 
-## Github 仓库
+- `resume(name, ..., body)` 的姓名和正文为必填项；`show: resume.with(...)` 会自动
+  传入正文。默认参数为 `lang: "en"`、`font: "Libertinus Serif"`、`photo: none`、
+  `contacts: ()`。
+- 中文设置 `lang: "zh"`、`font: "Noto Serif CJK SC"`。模板统一设置 PDF 标题、作者
+  和文本语言。头像占用 25 × 33 mm 的区域并裁切适配，排版会为它保留空间。
+- `contact(body, icon: none, dest: none)` 接收显示内容、可选图标和可选链接。
+  联系方式可自然换行，不使用固定高度的文字盒子。内置图标有 `fa-home`、`fa-email`、
+  `fa-github`、`fa-linkedin`、`fa-phone`、`fa-weixin`。使用自定义图标时，导入
+  `icon`，再调用 `icon(path("../img/custom.svg"))`。
+- `entry(title, role: none, details: none, date: none)` 第一行显示标题和角色，第二行
+  显示详情和日期；均支持字符串或内容块。可选项用 `none` 表示，第二行两项都省略时
+  不生成该行。条目保持在同一页，较长的描述应放在后面的列表中。
+- 章节直接写 `= 教育经历`，描述直接写原生项目列表。在 `template/template.typ` 中
+  统一调整字体、行距和章节样式。
 
-1. 在仓库的右上角点击 "Use this template" 按钮，选择新建一个您的仓库；
-2. （可选）在 `Github Actions` 控制界面打开本仓库的 Github Action 功能；
-3. 修改 `src` 文件夹下的文件为你的简历内容。
+## 验证与自动构建
 
-### 本地编译
+`make check` 会拒绝编译警告，并检查 PDF/UA-1 导出、标题层级、链接目标、语言、
+作者，以及可选字段、长字段、调用方相对图片路径、分页和清理范围。
+确定值断言放在独立测试夹具中，更改简历的姓名、联系方式、章节或页数不需要修改测试。
+检查使用临时文件，不覆盖已生成的简历。
 
-#### 字体安装
+GitHub Actions 在 push、PR 和手动触发时检查并构建。推送标签时还会将两份 PDF 发布到
+GitHub Releases；只有发布作业拥有仓库写权限。需要正式发布时，创建版本标签并推送
+该特定标签。
 
-对于本地没有安装谷歌版思源宋体 （`Noto Serif CJK SC`）的用户，需要下载改字体才能正常编译中文版简历，可选只在本仓库使用或者全局安装。下载链接：[Noto Serif CJK SC](https://fonts.google.com/noto/specimen/Noto+Serif+SC)，对于访问谷歌受限的用户，可以在国内镜像站如 [清华大学镜像](https://mirrors.tuna.tsinghua.edu.cn/github-release/googlefonts/noto-cjk/Noto%20Serif%20CJK%20Version%202.002%20(OTF,%20OTC,%20Super%20OTC,%20Subset%20OTF,%20Variable%20OTF_TTF)/09_NotoSerifCJKsc.zip) 下载。
-
-对于只在本项目中使用该字体的用户，可以将字体文件放在项目根目录下，`Makefile` 中已经制定了编译的字体路径。
-
-对于全局安装的用户，Windows 用户可以右键字体文件选择 “安装” 或者 “为所有用户安装”。 Linux 用户可以检查自己的发行版包管理器是否有 `fonts-noto-cjk` 或者 `fonts-noto-cjk-extra` 这两个包，如果有的话可以直接安装。安装后请使用 `fc-cache -fv` 命令刷新字体缓存。
-
-#### 编译
-
-在有 Typst 和 GNU Make 的本地环境中，可以通过 Typst 命令行工具进行编译。
-
-项目提供的 Makefile 中包含了以下几个定义目标：
-
-- `make all`：清理文件夹中的所有 .pdf 文件，然后编译中文和英文版本的简历文件；
-- `make clean`：清理文件夹中的所有 .pdf 文件；
-- `make zh`：编译中文版本的简历文件；
-- `make en`：编译英文版本的简历文件；
-
-### Github Actions
-
-项目配置了自动部署的 Github Actions，可以在每次提交后自动运行 Typst （执行的命令是 `make all`）并将生成的 PDF 文件打包提供下载。可以在 `Actions` 标签页查看运行结果，并在对应运行时的 `Summary` 页面的 `Artifacts` 部分下载生成的 PDF 文件压缩包。
-
-![](https://github.com/NorthSecond/Auto_Typst_Resume_Template/blob/main/docs/Action.png?raw=true)
-
-### Github Release
-
-项目配置了 Github Release，对于正式版本的发布，使用 `git tag` 功能打上版本号标签，Github Actions 会自动将生成的 PDF 文件发布到 Github Release 页面。
-
-> 请注意，使用 `git tag` 功能时，需要在本地使用 `git push --tags` 命令将标签推送到远程仓库。
-
-
-## TBD
-
-- [x] 英文版示例与字体
-- [x] 证件照插入的解决方案
+编译与 PDF/UA 检查通过不代表所有 ATS 都能正确解析，也不等同于完整的无障碍认证。
+改变字体或内容后仍需检查 PDF 版面。
+具体版本变化、官方依据和旧接口迁移方式见[现代化说明](CHANGELOG.md)。
 
 ---
 
-本项目在 v2.1.0 后使用 [CC BY-NC 4.0 协议](https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans)开源，请在遵守协议的前提下自由使用，但不得用于商业用途。
+本项目自 v2.1.0 起使用 [CC BY-NC 4.0 协议](https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans)
+开源，不得用于商业用途。

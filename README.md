@@ -1,79 +1,137 @@
 # Typst Bilingual Resume Template
 
-**[中文版本 / Chinese Version](./readme-zh.md)**
+**[中文版](./readme-zh.md)**
 
-## Introduction
+An editable Chinese/English A4 resume template with local, Typst Web, and GitHub
+Actions builds. Requires **Typst 0.15.1 or newer**; CI is pinned to **0.15.1**.
+There are no Typst package dependencies.
 
-A Typst bilingual (Chinese/English) resume template that can be automatically compiled using GitHub Actions or Typst's official website (**no local environment required**). Preview examples below (also available as PDF files in the Release section):
-
-|  [Chinese Example](https://github.com/NorthSecond/Auto_Typst_Resume_Template/releases/download/v2.1.0/default.pdf) |  [English Example](https://github.com/NorthSecond/Auto_Typst_Resume_Template/releases/download/v2.1.0/Resume.pdf)| 
+| Chinese example | English example |
 |:---:|:---:|
-| ![](/docs/Chinese.png?raw=true) | ![](/docs/English.png?raw=true)| 
+| ![Chinese resume](docs/Chinese.png) | ![English resume](docs/English.png) |
+
+Template version: **3.0.0**. See the [release notes and migration guide](CHANGELOG.md).
+
+## Quick start
+
+1. Use this GitHub repository as a template.
+2. Edit `src/chinese.typ` or `src/english.typ`.
+3. Build locally or enable GitHub Actions and download the `resume-pdf` artifact.
+
+For Typst Web, upload the repository files with their directory structure, select
+one of the files in `src/` as the main file, and choose compiler version 0.15.1
+or newer. The [older shared project](https://typst.app/project/r4XMUB3ENQUH7zWiuK7_tO)
+is a historical copy and may not contain the current API.
+
+## Local build
+
+Install Typst and GNU Make. Run these commands **from the repository root**:
+
+```sh
+make             # Both PDFs: 个人简历.pdf and Resume.pdf
+make zh          # Chinese only
+make en          # English only
+make -j2 all     # Build both in parallel
+make check       # Compile and run regression checks; requires a POSIX shell
+make clean       # Remove only the two generated PDFs
+```
+
+`make build` is an alias for `make all`. Building does not run cleanup.
+The compiler can be overridden with `TYPST=/path/to/typst`.
+To request Typst's PDF/UA-1 export checks when building:
+
+```sh
+make TYPST_FLAGS='--pdf-standard ua-1'
+```
+
+Without Make, compile directly:
+
+```sh
+typst compile --root . --font-path fonts src/chinese.typ 个人简历.pdf
+typst compile --root . --font-path fonts src/english.typ Resume.pdf
+```
 
 ### Fonts
 
-The Chinese resume uses the Google version of **Noto Serif CJK SC** (Source Han Serif). For online users, no installation is required. For local users, please refer to the font installation section below. The English version uses the Centaur font.
+- Chinese: **Noto Serif CJK SC**. On Debian/Ubuntu, install `fonts-noto-cjk`.
+  Alternatively, download fonts from [Noto CJK](https://github.com/notofonts/noto-cjk)
+  and place the files in `fonts/`. Do not put them in the repository root.
+- English: **Libertinus Serif**, bundled with the official Typst CLI.
+- Check available family names with `typst fonts --font-path fonts`. On Typst Web,
+  select an available family or upload the required font files. A download named
+  “Noto Serif SC” may expose a different family name from “Noto Serif CJK SC”;
+  the `font` option must match the installed family.
 
-### Profile Photo Support
+## Editing the resume
 
-You can optionally include a profile photo in your resume. If you don't need a profile photo, simply set the `pic_path` parameter to empty. If you want to include one, set the `pic_path` parameter to your photo's file path.
+Configuration lives in one document show rule. Paths are created in the source
+file, so they keep their meaning when passed to the template:
 
-## Usage
+```typ
+#import "../template/template.typ": resume, contact, entry
+#import "../template/icons.typ": fa-email
 
-### Typst Web (Recommended)
+#show: resume.with(
+  "San Zhang",
+  lang: "en",
+  font: "Libertinus Serif",
+  // Optional; omit this parameter for no photo.
+  // photo: path("../img/avatar.jpg"),
+  contacts: (
+    contact("me@example.org", icon: fa-email, dest: "mailto:me@example.org"),
+  ),
+)
 
-I've created an online project on [typst.app](https://typst.app), [available here](https://typst.app/project/r4XMUB3ENQUH7zWiuK7_tO). You can copy this project to your own account for online editing and real-time preview.
+= Education
 
-### Using This GitHub Repository
+#entry(
+  "Example University",
+  role: "Master of Engineering",
+  details: "Computer Science",
+  date: "2024–2027",
+)
+- *Achievement:* Describe a concrete result.
+```
 
-1. Click the "Use this template" button in the top-right corner of this repository to create your own repository;
-2. (Optional) Enable GitHub Actions for this repository in the `Actions` settings;
-3. Modify the files in the `src` folder with your resume content.
+- `resume(name, ..., body)` requires the name and body; `show: resume.with(...)`
+  supplies the body automatically. Defaults: `lang: "en"`,
+  `font: "Libertinus Serif"`, `photo: none`, `contacts: ()`.
+- Use `lang: "zh"` and `font: "Noto Serif CJK SC"` for Chinese. The template sets
+  the PDF title, author, and text language. A photo occupies a 25 × 33 mm frame
+  and is cropped to fit; its space is reserved in the header.
+- `contact(body, icon: none, dest: none)` accepts display content, an optional
+  rendered icon, and an optional link. Contacts wrap naturally; no fixed-height
+  text boxes are used. Available icons: `fa-home`, `fa-email`, `fa-github`,
+  `fa-linkedin`, `fa-phone`, `fa-weixin`. For a custom image, import `icon` and
+  use `icon(path("../img/custom.svg"))`.
+- `entry(title, role: none, details: none, date: none)` lays out title/role on the
+  first row and details/date on the second. All fields accept text or content.
+  Optional fields use `none`; the second row is omitted when both are absent.
+  Each entry stays on one page. Put lengthy descriptions in the following list.
+- Write sections as `= Heading` and descriptions as native bullet lists. Adjust
+  shared typography and spacing in `template/template.typ`.
 
-### Local Compilation
+## Validation and automation
 
-#### Font Installation
+`make check` rejects compiler warnings and checks PDF/UA-1 export, heading/title
+semantics, link destinations, language/author, optional fields, long fields,
+caller-relative image paths, pagination, and safe cleanup. Fixed expectations
+live in test fixtures, so changing your name, contacts, sections, or page count
+does not require editing tests. Checks use temporary files and leave the
+generated resumes untouched.
 
-For users who don't have the Google version of Noto Serif CJK SC installed locally, you'll need to download this font to properly compile the Chinese resume. You can choose to install it only for this repository or globally.
+GitHub Actions runs checks and builds on pushes, pull requests, and manual runs.
+Tag pushes additionally publish the two PDFs to GitHub Releases. Only the release
+job has repository write permission. For an intentional release, create a version
+tag and push that specific tag.
 
-Download link: [Noto Serif CJK SC](https://fonts.google.com/noto/specimen/Noto+Serif+SC)
-
-For users with restricted Google access, you can download from domestic mirror sites such as [Tsinghua University Mirror](https://mirrors.tuna.tsinghua.edu.cn/github-release/googlefonts/noto-cjk/Noto%20Serif%20CJK%20Version%202.002%20(OTF,%20OTC,%20Super%20OTC,%20Subset%20OTF,%20Variable%20OTF_TTF)/09_NotoSerifCJKsc.zip).
-
-**For project-only use**: Place the font files in the project root directory. The `Makefile` already specifies the font path for compilation.
-
-**For global installation**: 
-- **Windows users**: Right-click the font file and select "Install" or "Install for all users"
-- **Linux users**: Check if your distribution's package manager has `fonts-noto-cjk` or `fonts-noto-cjk-extra` packages. If available, install directly. After installation, run `fc-cache -fv` to refresh the font cache.
-
-#### Compilation
-
-In a local environment with Typst and GNU Make installed, you can compile using the Typst command-line tool.
-
-The provided Makefile includes the following targets:
-
-- `make all`: Clean all .pdf files in the folder, then compile both Chinese and English resume versions
-- `make clean`: Clean all .pdf files in the folder
-- `make zh`: Compile the Chinese version of the resume
-- `make en`: Compile the English version of the resume
-
-### GitHub Actions
-
-The project is configured with automated GitHub Actions that run Typst (executing `make all`) after each commit and package the generated PDF files for download. You can view the results in the `Actions` tab and download the generated PDF archive from the `Artifacts` section of the corresponding run's `Summary` page.
-
-![](https://github.com/NorthSecond/Auto_Typst_Resume_Template/blob/main/docs/Action.png?raw=true)
-
-### GitHub Releases
-
-The project is configured for GitHub Releases. For official version releases, use the `git tag` feature to create version tags, and GitHub Actions will automatically publish the generated PDF files to the GitHub Release page.
-
-> **Note**: When using `git tag`, remember to use `git push --tags` locally to push the tags to the remote repository.
-
-## Roadmap
-
-- [x] English version examples and fonts
-- [x] Profile photo insertion solution
+Compilation and PDF/UA checks do not guarantee correct parsing by every ATS or
+full accessibility compliance. Inspect the PDF after changing fonts or content.
+See [modernization notes and migration guide](CHANGELOG.md) for the
+version-specific decisions and official references.
 
 ---
 
-This project is open-sourced under the [CC BY-NC 4.0 License](https://creativecommons.org/licenses/by-nc/4.0/) from version v2.1.0 onwards. Please use freely while adhering to the license terms, but commercial use is not permitted.
+Since v2.1.0, this project is licensed under
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+Commercial use is not permitted.
