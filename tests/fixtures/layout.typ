@@ -37,11 +37,13 @@
   [Boundary title #metadata("title") <entry-title>],
   details: [Boundary details #metadata("details") <entry-details>],
 )
+- #metadata("description") <entry-description>First description.
 
 #context {
   assert.eq(locate(<boundary-heading>).page(), 2)
   assert.eq(locate(<boundary-heading>).page(), locate(<entry-title>).page())
   assert.eq(locate(<entry-title>).page(), locate(<entry-details>).page())
+  assert.eq(locate(<entry-title>).page(), locate(<entry-description>).page())
   assert(query(heading).first().location().position().y > 1.3cm + 33mm,
     message: "The photo must reserve space above the first section")
 }

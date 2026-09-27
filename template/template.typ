@@ -37,9 +37,11 @@
       header
     } else {
       grid(
-        columns: (1fr, auto),
+        // Equal side columns keep the header on the page centerline.
+        columns: (25mm, 1fr, 25mm),
         column-gutter: 1em,
-        align: (center + horizon, right + horizon),
+        align: (left + horizon, center + horizon, right + horizon),
+        [],
         header,
         image(photo, width: 25mm, height: 33mm, fit: "cover", alt: name),
       )
@@ -58,17 +60,18 @@
 }
 
 // Two rows, in reading order: title / role, then details / date.
-#let entry(title, role: none, details: none, date: none) = block(
+#let entry(title, role: none, details: none, date: none) = context block(
   width: 100%,
   breakable: false,
+  sticky: true,
   above: 0.65em,
-  below: 0.5em,
+  below: par.leading,
   {
     set par(justify: false)
     grid(
       columns: (3fr, 2fr),
       column-gutter: 1em,
-      row-gutter: 0.35em,
+      row-gutter: par.leading,
       align: (left, right),
       strong(title), role,
       ..if details != none or date != none { (details, date) } else { () },

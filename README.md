@@ -10,7 +10,7 @@ There are no Typst package dependencies.
 |:---:|:---:|
 | ![Chinese resume](docs/Chinese.png) | ![English resume](docs/English.png) |
 
-Template version: **3.0.0**. See the [release notes and migration guide](CHANGELOG.md).
+Template version: **3.1.0**. See the [release notes and migration guide](CHANGELOG.md).
 
 ## Quick start
 
@@ -98,7 +98,8 @@ file, so they keep their meaning when passed to the template:
   `font: "Libertinus Serif"`, `photo: none`, `contacts: ()`.
 - Use `lang: "zh"` and `font: "Noto Serif CJK SC"` for Chinese. The template sets
   the PDF title, author, and text language. A photo occupies a 25 × 33 mm frame
-  and is cropped to fit; its space is reserved in the header.
+  and is cropped to fit; equal side columns reserve its space while keeping the
+  name and contacts centered on the page.
 - `contact(body, icon: none, dest: none)` accepts display content, an optional
   rendered icon, and an optional link. Contacts wrap naturally; no fixed-height
   text boxes are used. Available icons: `fa-home`, `fa-email`, `fa-github`,
@@ -107,7 +108,9 @@ file, so they keep their meaning when passed to the template:
 - `entry(title, role: none, details: none, date: none)` lays out title/role on the
   first row and details/date on the second. All fields accept text or content.
   Optional fields use `none`; the second row is omitted when both are absent.
-  Each entry stays on one page. Put lengthy descriptions in the following list.
+  Each entry stays on one page and with the start of the following description.
+  Row spacing and the gap below an entry follow `par.leading`. Put lengthy
+  descriptions in the following list.
 - Write sections as `= Heading` and descriptions as native bullet lists. Adjust
   shared typography and spacing in `template/template.typ`.
 
@@ -115,7 +118,7 @@ file, so they keep their meaning when passed to the template:
 
 `make check` rejects compiler warnings and checks PDF/UA-1 export, heading/title
 semantics, link destinations, language/author, optional fields, long fields,
-caller-relative image paths, pagination, and safe cleanup. Fixed expectations
+caller-relative image paths, page centering, entry spacing, pagination, and safe cleanup. Fixed expectations
 live in test fixtures, so changing your name, contacts, sections, or page count
 does not require editing tests. Checks use temporary files and leave the
 generated resumes untouched.

@@ -9,7 +9,7 @@
 |:---:|:---:|
 | ![中文简历](docs/Chinese.png) | ![英文简历](docs/English.png) |
 
-模板版本：**3.0.0**。升级说明见[版本日志与迁移指南](CHANGELOG.md)。
+模板版本：**3.1.0**。升级说明见[版本日志与迁移指南](CHANGELOG.md)。
 
 ## 快速开始
 
@@ -95,21 +95,23 @@ typst compile --root . --font-path fonts src/english.typ Resume.pdf
   传入正文。默认参数为 `lang: "en"`、`font: "Libertinus Serif"`、`photo: none`、
   `contacts: ()`。
 - 中文设置 `lang: "zh"`、`font: "Noto Serif CJK SC"`。模板统一设置 PDF 标题、作者
-  和文本语言。头像占用 25 × 33 mm 的区域并裁切适配，排版会为它保留空间。
+  和文本语言。头像占用 25 × 33 mm 的区域并裁切适配；页头两侧预留对称空间，
+  确保姓名和联系方式全局居中。
 - `contact(body, icon: none, dest: none)` 接收显示内容、可选图标和可选链接。
   联系方式可自然换行，不使用固定高度的文字盒子。内置图标有 `fa-home`、`fa-email`、
   `fa-github`、`fa-linkedin`、`fa-phone`、`fa-weixin`。使用自定义图标时，导入
   `icon`，再调用 `icon(path("../img/custom.svg"))`。
 - `entry(title, role: none, details: none, date: none)` 第一行显示标题和角色，第二行
   显示详情和日期；均支持字符串或内容块。可选项用 `none` 表示，第二行两项都省略时
-  不生成该行。条目保持在同一页，较长的描述应放在后面的列表中。
+  不生成该行。条目保持在同一页，并与后续描述的开头相邻。行间及条目下方留白
+  跟随 `par.leading`，较长的描述应放在后面的列表中。
 - 章节直接写 `= 教育经历`，描述直接写原生项目列表。在 `template/template.typ` 中
   统一调整字体、行距和章节样式。
 
 ## 验证与自动构建
 
 `make check` 会拒绝编译警告，并检查 PDF/UA-1 导出、标题层级、链接目标、语言、
-作者，以及可选字段、长字段、调用方相对图片路径、分页和清理范围。
+作者，以及可选字段、长字段、调用方相对图片路径、全局居中、条目留白、分页和清理范围。
 确定值断言放在独立测试夹具中，更改简历的姓名、联系方式、章节或页数不需要修改测试。
 检查使用临时文件，不覆盖已生成的简历。
 

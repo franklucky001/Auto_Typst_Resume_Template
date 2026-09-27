@@ -19,7 +19,7 @@ run_typst() {
 }
 
 # User-editable examples must compile but need not keep sample names or content.
-for source in src/chinese.typ src/english.typ tests/fixtures/layout.typ tests/minimal.typ; do
+for source in src/chinese.typ src/english.typ tests/fixtures/*.typ tests/minimal.typ; do
   name=$(basename "$source" .typ)
   run_typst compile --root . --font-path fonts --pdf-standard ua-1 \
     "$source" "$tmp/$name.pdf"

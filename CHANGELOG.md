@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.1.0 — 2026-09-27
+
+### Fixed / 修复
+
+- Keep names and contact information centered on the page when a photo is present.
+- Follow paragraph leading for entry row spacing and the gap before descriptions.
+- Keep entry headers with the start of their following descriptions across pages.
+- Add centering/spacing regression tests and refresh both sample previews.
+
+修复有头像时姓名与联系方式偏左、条目留白被压缩以及条目标题孤立在页底的问题。
+
 ## 3.0.0 — 2026-09-24
 
 This major release modernizes the bilingual resume template for **Typst 0.15.1+**.
